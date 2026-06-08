@@ -5,6 +5,7 @@ import QuizView from './QuizView.jsx';
 import WordBlast from './WordBlast.jsx';
 import LangCard from './LangCard.jsx';
 import { saveBlob, getBlob, deleteBlob, clearAllBlobs } from './trackDB.js';
+import DriftMode from './DriftMode.jsx';
 
 const C = {
   void:'#03010a',deep:'#080810',card:'#0e0c1a',glass:'#14102a',
@@ -295,12 +296,12 @@ function CosmosScreen({state,nav,hz}) {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
         {[
+          {label:'Lucid Drift',icon:'🌊',screen:'drift',color:C.cyan},
           {label:'Voice Lab',icon:'🎙',screen:'voice',color:C.rose},
           {label:'Focus',icon:'◎',screen:'focus',color:C.gold},
-          {label:'All Cards',icon:'⚡',screen:'cards',color:C.cyan},
+          {label:'All Cards',icon:'⚡',screen:'cards',color:C.violet},
           {label:'Levels',icon:'▲',screen:'levels',color:C.acid},
           {label:'Settings',icon:'⚙',screen:'settings',color:C.dim},
-          {label:'AI Tutor',icon:'∞',screen:'ai',color:C.cyan},
         ].map(btn=>(
           <Glass key={btn.screen} onClick={()=>nav(btn.screen)} style={{padding:'14px 8px',textAlign:'center',cursor:'pointer',borderColor:`${btn.color}33`}}>
             <div style={{fontSize:20}}>{btn.icon}</div>
@@ -1239,6 +1240,7 @@ export default function AethermindApp() {
 
   const screens = {
     cosmos:   <CosmosScreen state={state} nav={nav} hz={hz}/>,
+    drift:    <DriftMode srs={state.srs} onXP={handleBlastXP} voices={voices} hz={hz} onExit={()=>nav('cosmos')}/>,
     quiz:     <QuizView srs={state.srs} onRate={handleQuizRate} themeColor={C.violet} voices={voices}/>,
     blast:    <WordBlast onXP={handleBlastXP} voices={voices} themeColor={C.violet}/>,
     music:    <MusicHubScreen state={state} setState={setState} hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
