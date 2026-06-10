@@ -1,0 +1,94 @@
+name: Build & Release APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.2.0) — leave blank to auto-number'
+        required: false
+        default: ''
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web app (Android path)
+        run: npm run build:android
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync web assets into Android project
+        run: npx cap sync android
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "value=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "value=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "value=build-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Tag commit (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git tag "${{ steps.tag.outputs.value }}" || true
+          git push origin "${{ steps.tag.outputs.value }}" || true
+
+      - name: Rename APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             "AETHERMIND-${{ steps.tag.outputs.value }}.apk"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: ÆTHERMIND ${{ steps.tag.outputs.value }}
+          body: |
+            ## ÆTHERMIND — Lucid Dreamland
+            Russian vocabulary SRS with binaural frequencies.
+
+            ### Install on Android
+            1. Download **AETHERMIND-${{ steps.tag.outputs.value }}.apk** below
+            2. On your device → **Settings → Security → Install unknown apps** → enable for your browser/files app
+            3. Tap the downloaded APK and install
+          files: AETHERMIND-${{ steps.tag.outputs.value }}.apk
+          draft: false
+          prerelease: false
