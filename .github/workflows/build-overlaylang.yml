@@ -1,15 +1,10 @@
-name: Build & Release APK
+name: Build OverlayLang APK
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version (e.g. 1.2.0) — leave blank to auto-number'
-        required: false
-        default: ''
   push:
-    tags:
-      - 'v*'
+    branches: [main, claude/expo-app]
+    paths: ['expo-app/**']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,96 +17,82 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Set up Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build web app (Android base path)
-        run: npm run build:android
-
-      - name: Setup Java 17
+      - name: Set up Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Install dependencies
+        working-directory: expo-app
+        run: npm install
 
-      - name: Add Android platform
-        run: npx cap add android
+      - name: Expo prebuild (Android)
+        working-directory: expo-app
+        run: npx expo prebuild --platform android --no-install
 
-      - name: Write local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
-
-      - name: Sync web assets into Android project
-        run: npx cap sync android
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x android/gradlew
-
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Resolve release tag
-        id: tag
+      - name: Patch Gradle + Kotlin versions
+        working-directory: expo-app/android
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "value=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          elif [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "value=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "value=build-${{ github.run_number }}" >> $GITHUB_OUTPUT
-          fi
+          # Gradle 9.x bundles Kotlin 2.2.x which breaks RN 0.76 settings plugin (compiled w/ Kotlin 1.9)
+          sed -i 's|gradle-.*-bin.zip|gradle-8.10.2-bin.zip|' gradle/wrapper/gradle-wrapper.properties
+          # RN 0.76 pins kotlin=1.9.24 in react-native/gradle/libs.versions.toml; Expo SDK 56 requires >=2.1.20
+          sed -i 's/^kotlin = ".*"/kotlin = "2.1.20"/' \
+            ../node_modules/react-native/gradle/libs.versions.toml
+          # hermes-compiler is not a standalone package in RN 0.76; use bundled Hermes from the AAR
+          sed -i 's|hermesCommand = new File.*|// hermesCommand = // using bundled Hermes from AAR|' \
+            app/build.gradle
 
-      - name: Tag commit (manual dispatch only)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Make gradlew executable
+        working-directory: expo-app/android
+        run: chmod +x gradlew
+
+      - name: Build release APK
+        working-directory: expo-app/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Locate APK
+        id: find_apk
+        working-directory: expo-app
         run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git tag "${{ steps.tag.outputs.value }}" || true
-          git push origin "${{ steps.tag.outputs.value }}" || true
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          echo "apk_path=$APK" >> "$GITHUB_OUTPUT"
+          echo "Found APK: $APK"
 
-      - name: Rename APK
+      - name: Get version
+        id: version
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "AETHERMIND-${{ steps.tag.outputs.value }}.apk"
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: AETHERMIND-${{ steps.tag.outputs.value }}
-          path: AETHERMIND-${{ steps.tag.outputs.value }}.apk
-          retention-days: 30
+          VERSION=$(node -p "require('./expo-app/app.json').expo.version")
+          BUILD=$(node -p "require('./expo-app/app.json').expo.android.versionCode")
+          TS=$(date +%Y%m%d%H%M)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "ts=$TS" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.value }}
-          name: ÆTHERMIND ${{ steps.tag.outputs.value }}
+          tag_name: v${{ steps.version.outputs.version }}-${{ steps.version.outputs.ts }}
+          name: OverlayLang v${{ steps.version.outputs.version }}
           body: |
-            ## ÆTHERMIND — Lucid Dreamland
-            Russian vocabulary SRS with binaural frequencies.
+            ## OverlayLang v${{ steps.version.outputs.version }}
 
-            ### ⬇️ Install on Android
-            1. Download **AETHERMIND-${{ steps.tag.outputs.value }}.apk** below
-            2. On your phone → **Settings → Security → Install unknown apps** → allow your browser
-            3. Tap the downloaded APK → Install
-          files: AETHERMIND-${{ steps.tag.outputs.value }}.apk
+            ### Install on Android
+            1. Download the APK below
+            2. Enable **Install from unknown sources** in Settings → Security
+            3. Open the downloaded APK and install
+
+            ### Features
+            - EN↔ES translation — works offline with bundled dictionary
+            - IPA phonetics for English words
+            - Voice input (add Deepgram API key in Settings)
+            - History with search
+            - Optional Supabase sync (add credentials in Settings)
+          files: expo-app/${{ steps.find_apk.outputs.apk_path }}
           draft: false
           prerelease: false
