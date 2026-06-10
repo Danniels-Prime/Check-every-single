@@ -2,13 +2,17 @@
  * Optional Supabase sync for history.
  * Credentials are entered by the user in Settings and stored in AsyncStorage.
  */
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { HistoryEntry, SupabaseHistoryRow } from '../types';
 
 let _client: SupabaseClient | null = null;
 
+// createClient is imported lazily so Supabase is never evaluated at startup.
+// This prevents the node:crypto / URL crash when the user hasn't set credentials.
 export function getSupabaseClient(url: string, anonKey: string): SupabaseClient {
-  if (!_client || _client.supabaseUrl !== url) {
+  if (!_client) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createClient } = require('@supabase/supabase-js') as typeof import('@supabase/supabase-js');
     _client = createClient(url, anonKey);
   }
   return _client;
