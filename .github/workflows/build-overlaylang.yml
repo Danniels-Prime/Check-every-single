@@ -47,6 +47,8 @@ jobs:
           # hermes-compiler is not a standalone package in RN 0.76; use bundled Hermes from the AAR
           sed -i 's|hermesCommand = new File.*|// hermesCommand = // using bundled Hermes from AAR|' \
             app/build.gradle
+          # enableBundleCompression was removed from ReactExtension in the Kotlin 2.1.20-compatible plugin
+          sed -i '/enableBundleCompression/d' app/build.gradle
 
       - name: Make gradlew executable
         working-directory: expo-app/android
