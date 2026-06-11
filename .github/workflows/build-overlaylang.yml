@@ -50,14 +50,13 @@ jobs:
           # enableBundleCompression was removed from ReactExtension in the Kotlin 2.1.20-compatible plugin
           sed -i '/enableBundleCompression/d' app/build.gradle
           # pika-compiler (io.github.lukmccall.pika) is not published to any accessible Maven repo.
-          # Strip it from reanimated's android gradle files; worklets still transform via Babel/metro.
-          RNRA_DIR="../node_modules/react-native-reanimated/android"
-          if [ -d "$RNRA_DIR" ]; then
-            find "$RNRA_DIR" \( -name "*.gradle" -o -name "*.gradle.kts" \) \
-              -exec sed -i '/lukmccall\|pika-compiler/d' {} \;
-          fi
-          find . \( -name "settings.gradle" -o -name "settings.gradle.kts" \) \
-            -exec sed -i '/lukmccall\|pika-compiler/d' {} \;
+          # Multiple packages reference it (:expo, :react-native-reanimated, …).
+          # Strip every reference from node_modules android gradle files and the generated project.
+          find ../node_modules -path "*/android/*.gradle" -o -path "*/android/*.gradle.kts" 2>/dev/null | \
+            xargs grep -l "lukmccall\|pika-compiler" 2>/dev/null | \
+            xargs sed -i '/lukmccall\|pika-compiler/d' 2>/dev/null || true
+          find . \( -name "*.gradle" -o -name "*.gradle.kts" \) \
+            -exec sed -i '/lukmccall\|pika-compiler/d' {} \; 2>/dev/null || true
 
       - name: Make gradlew executable
         working-directory: expo-app/android
