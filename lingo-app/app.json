@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "LINGO",
+    "slug": "lingo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#060810",
+    "scheme": "lingo",
+    "splash": { "backgroundColor": "#060810" },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.lingo.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "LINGO needs your microphone to transcribe speech in real-time."
+      }
+    },
+    "android": {
+      "package": "com.lingo.app",
+      "adaptiveIcon": { "backgroundColor": "#060810" },
+      "permissions": ["android.permission.RECORD_AUDIO"]
+    },
+    "plugins": ["expo-router", "expo-av"],
+    "experiments": { "typedRoutes": true }
+  }
+}
