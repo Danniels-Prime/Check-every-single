@@ -39,6 +39,16 @@ jobs:
         working-directory: lingo-app
         run: npx expo prebuild --platform android --no-install
 
+      - name: Create splash screen placeholder images
+        working-directory: lingo-app
+        run: |
+          # 1x1 dark PNG — Expo references splashscreen_logo but doesn't generate it when no image is set
+          SPLASH_B64="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+          for DIR in drawable drawable-mdpi drawable-hdpi drawable-xhdpi drawable-xxhdpi drawable-xxxhdpi; do
+            mkdir -p "android/app/src/main/res/$DIR"
+            echo "$SPLASH_B64" | base64 -d > "android/app/src/main/res/$DIR/splashscreen_logo.png"
+          done
+
       - name: Write local.properties
         working-directory: lingo-app
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
