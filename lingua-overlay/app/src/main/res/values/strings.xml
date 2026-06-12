@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LinguaOverlay</string>
+    <string name="accessibility_service_label">LinguaOverlay Word Tap</string>
+    <string name="accessibility_service_description">Detects selected/tapped text across all apps to show instant translation overlays.</string>
+</resources>

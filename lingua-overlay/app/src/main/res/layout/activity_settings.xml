@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#0D0D1A">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="API Keys"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Keys are stored encrypted on-device only."
+        android:textSize="13sp"
+        android:textColor="#8899BB"
+        android:layout_marginBottom="32dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Claude API Key (for translations)"
+        android:textSize="14sp"
+        android:textColor="#AABBCC"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etClaudeKey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="sk-ant-..."
+        android:inputType="textPassword"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#445566"
+        android:backgroundTint="#334455"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Deepgram API Key (for live transcription)"
+        android:textSize="14sp"
+        android:textColor="#AABBCC"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/etDeepgramKey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Deepgram API key"
+        android:inputType="textPassword"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#445566"
+        android:backgroundTint="#334455"
+        android:padding="12dp"
+        android:layout_marginBottom="40dp"/>
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Save Keys"
+        android:textSize="16sp"
+        android:backgroundTint="#2244AA"/>
+
+</LinearLayout>
