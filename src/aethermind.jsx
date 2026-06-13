@@ -302,6 +302,7 @@ function CosmosScreen({state,nav,hz}) {
           {label:'All Cards',icon:'⚡',screen:'cards',color:C.violet},
           {label:'Levels',icon:'▲',screen:'levels',color:C.acid},
           {label:'Settings',icon:'⚙',screen:'settings',color:C.dim},
+          {label:'Read',icon:'📖',screen:'reader',color:C.teal},
         ].map(btn=>(
           <Glass key={btn.screen} onClick={()=>nav(btn.screen)} style={{padding:'14px 8px',textAlign:'center',cursor:'pointer',borderColor:`${btn.color}33`}}>
             <div style={{fontSize:20}}>{btn.icon}</div>
@@ -1156,14 +1157,145 @@ function AIScreen({state,setState,nav}) {
   );
 }
 
+// ─── READER SCREEN ───────────────────────────────────────────────────────────
+const VOCAB_BY_RU = Object.fromEntries(VOCAB.map(v => [v.ru.toLowerCase(), v]));
+
+function tokenise(text) {
+  return text.match(/[а-яёА-ЯЁa-zA-Z0-9''-]+|[^\wа-яёА-ЯЁ\s]/gu) ?? [];
+}
+
+function WordToken({word, entry, onAdd, added}) {
+  const [hovered, setHovered] = useState(false);
+  const isPunct = !/[а-яёА-ЯЁa-zA-Z0-9]/.test(word);
+  if (isPunct) return <span style={{color:C.dim,marginRight:2}}>{word}</span>;
+  return (
+    <span
+      style={{position:'relative',display:'inline-block',
+        color:entry?C.violet:C.silver,
+        borderBottom:entry?`1px dotted ${C.violet}88`:'none',
+        cursor:'pointer',marginRight:5,marginBottom:6}}
+      onMouseEnter={()=>setHovered(true)}
+      onMouseLeave={()=>setHovered(false)}
+    >
+      {word}
+      {hovered&&(
+        <div style={{
+          position:'absolute',bottom:'calc(100% + 8px)',left:'50%',
+          transform:'translateX(-50%)',zIndex:200,
+          background:C.card,border:`1px solid ${entry?C.violet:C.dim}44`,
+          borderRadius:10,padding:'10px 12px',minWidth:160,maxWidth:220,
+          boxShadow:'0 8px 32px #00000099',animation:'fadeIn .15s ease-out',
+          pointerEvents:'auto',
+        }}>
+          <div style={{color:C.violet,fontWeight:700,fontSize:15,marginBottom:4}}>{word}</div>
+          {entry?(
+            <>
+              <div style={{color:C.dim,fontSize:11,fontFamily:"'Space Mono',monospace",marginBottom:4}}>{entry.pr}</div>
+              <div style={{color:C.silver,fontSize:13,marginBottom:6}}>{entry.en}</div>
+              {entry.ex_ru&&(
+                <div style={{color:C.dim,fontSize:11,marginBottom:8,fontStyle:'italic',lineHeight:1.5}}>
+                  {entry.ex_ru}<br/>{entry.ex_en}
+                </div>
+              )}
+              <button onClick={e=>{e.stopPropagation();onAdd(entry);}} style={{
+                background:added?`${C.bio}22`:`${C.ultra}22`,
+                border:`1px solid ${added?C.bio:C.ultra}66`,
+                borderRadius:6,padding:'4px 10px',color:added?C.bio:C.violet,
+                fontSize:11,cursor:'pointer',fontFamily:"'Outfit',sans-serif",
+                fontWeight:600,width:'100%',
+              }}>
+                {added?'✓ In study queue':'+ Add to study'}
+              </button>
+            </>
+          ):(
+            <div style={{color:C.dim,fontSize:12}}>Not in vocab</div>
+          )}
+          <div style={{position:'absolute',top:'100%',left:'50%',transform:'translateX(-50%)',
+            width:0,height:0,borderLeft:'6px solid transparent',
+            borderRight:'6px solid transparent',
+            borderTop:`6px solid ${entry?C.violet:C.dim}44`}}/>
+        </div>
+      )}
+    </span>
+  );
+}
+
+function ReaderScreen({state,setState,nav}) {
+  const [inputText,setInputText] = useState('');
+  const [tokens,setTokens] = useState(null);
+  const [added,setAdded] = useState({});
+
+  const process = () => {
+    const words = tokenise(inputText);
+    setTokens(words.map(w=>({word:w,entry:VOCAB_BY_RU[w.toLowerCase()]??null})));
+    setAdded({});
+  };
+
+  const handleAdd = useCallback((entry)=>{
+    setState(s=>({...s,srs:{...s.srs,[entry.id]:{...(s.srs[entry.id]??{}),nextReview:Date.now()}}}));
+    setAdded(a=>({...a,[entry.id]:true}));
+  },[setState]);
+
+  return (
+    <div style={{padding:'16px 16px 90px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
+        <button onClick={()=>nav('cosmos')} style={{background:'none',border:'none',color:C.dim,fontSize:20,cursor:'pointer'}}>←</button>
+        <div style={{fontFamily:"'Bebas Neue'",fontSize:28,color:C.teal,letterSpacing:3}}>TRANSLATION OVERLAY</div>
+      </div>
+
+      <Glass style={{padding:16,marginBottom:16}}>
+        <div style={{color:C.dim,fontSize:11,letterSpacing:2,marginBottom:8}}>PASTE RUSSIAN TEXT</div>
+        <textarea
+          value={inputText}
+          onChange={e=>setInputText(e.target.value)}
+          placeholder="Привет! Как дела сегодня?"
+          rows={4}
+          style={{width:'100%',background:C.ghost,border:`1px solid ${C.dim}44`,
+            borderRadius:10,padding:'10px 12px',color:C.silver,fontSize:15,
+            outline:'none',resize:'none',fontFamily:"'Outfit',sans-serif",
+            boxSizing:'border-box'}}
+        />
+        <Btn onClick={process} disabled={!inputText.trim()} color={C.teal}
+          style={{width:'100%',padding:'12px 0',marginTop:10,fontSize:15}}>
+          Analyse Text →
+        </Btn>
+      </Glass>
+
+      {tokens&&(
+        <Glass style={{padding:16}}>
+          <div style={{color:C.dim,fontSize:11,letterSpacing:2,marginBottom:12}}>HOVER WORDS FOR TRANSLATION</div>
+          <div style={{lineHeight:2.4,fontSize:18,position:'relative'}}>
+            {tokens.map((t,i)=>(
+              <WordToken key={i} word={t.word} entry={t.entry}
+                onAdd={handleAdd} added={t.entry?added[t.entry.id]??false:false}/>
+            ))}
+          </div>
+          <div style={{marginTop:16,color:C.dim,fontSize:11}}>
+            <span style={{color:C.violet}}>■</span> known vocab &nbsp;
+            <span style={{color:C.silver}}>■</span> unknown word
+          </div>
+        </Glass>
+      )}
+    </div>
+  );
+}
+
 // ─── BOTTOM NAV ──────────────────────────────────────────────────────────────
 function BottomNav({screen,nav,hz,dueCount,musicLabel}) {
   const tabs = [
+<<<<<<< HEAD
+    {id:'cosmos',icon:'◈',label:'Home'},
+    {id:'quiz',icon:'⚡',label:`Quiz${dueCount?` (${dueCount})`:''}`},
+    {id:'freq',icon:'〰',label:hz?`${hz}Hz`:'Freq'},
+    {id:'reader',icon:'📖',label:'Read'},
+    {id:'ai',icon:'∞',label:'AI'},
+=======
     {id:'cosmos', icon:'◈', label:'Home'},
     {id:'quiz',   icon:'⚡', label:`Quiz${dueCount?` (${dueCount})`:''}`},
     {id:'blast',  icon:'💥', label:'Blast'},
     {id:'music',  icon:'〰', label:musicLabel||'Music'},
     {id:'ai',     icon:'∞', label:'AI'},
+>>>>>>> origin/main
   ];
   return (
     <div style={{
@@ -1239,6 +1371,18 @@ export default function AethermindApp() {
   const musicLabel = state.settings.musicTabLabel || 'Music';
 
   const screens = {
+<<<<<<< HEAD
+    cosmos: <CosmosScreen state={state} nav={nav} hz={hz}/>,
+    quiz:   <QuizScreen state={state} setState={setState} nav={nav} hz={hz}/>,
+    cards:  <CardsScreen state={state} nav={nav}/>,
+    freq:   <FreqScreen hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
+    levels: <LevelsScreen state={state} nav={nav}/>,
+    focus:  <FocusScreen state={state} setState={setState} nav={nav} hz={hz}/>,
+    voice:  <VoiceScreen state={state} setState={setState} nav={nav}/>,
+    settings:<SettingsScreen state={state} setState={setState} nav={nav}/>,
+    ai:     <AIScreen state={state} setState={setState} nav={nav}/>,
+    reader: <ReaderScreen state={state} setState={setState} nav={nav}/>,
+=======
     cosmos:   <CosmosScreen state={state} nav={nav} hz={hz}/>,
     drift:    <DriftMode srs={state.srs} onXP={handleBlastXP} voices={voices} hz={hz} onExit={()=>nav('cosmos')}/>,
     quiz:     <QuizView srs={state.srs} onRate={handleQuizRate} themeColor={C.violet} voices={voices}/>,
@@ -1251,6 +1395,7 @@ export default function AethermindApp() {
     pair:     <PairMatch state={state} setState={setState} speak={speak}/>,
     settings: <SettingsScreen state={state} setState={setState} nav={nav}/>,
     ai:       <AIScreen state={state} setState={setState} nav={nav}/>,
+>>>>>>> origin/main
   };
 
   return (

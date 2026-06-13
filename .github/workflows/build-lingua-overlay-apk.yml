@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: claude/native-overlay-translation-app-wcoW0
 
       - name: Setup Java 17
         uses: actions/setup-java@v4

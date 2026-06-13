@@ -7,7 +7,9 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#060810",
     "scheme": "lingo",
-    "splash": { "backgroundColor": "#060810" },
+    "splash": {
+      "backgroundColor": "#060810"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.lingo.app",
@@ -17,10 +19,19 @@
     },
     "android": {
       "package": "com.lingo.app",
-      "adaptiveIcon": { "backgroundColor": "#060810" },
-      "permissions": ["android.permission.RECORD_AUDIO"]
+      "adaptiveIcon": {
+        "backgroundColor": "#060810"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
-    "plugins": ["expo-router", "expo-av"],
-    "experiments": { "typedRoutes": true }
+    "plugins": [
+      "expo-router",
+      "expo-av"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

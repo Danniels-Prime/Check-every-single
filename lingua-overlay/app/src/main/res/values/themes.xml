@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LinguaOverlay" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="colorPrimary">#2244AA</item>
+        <item name="colorPrimaryVariant">#112266</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSurface">#0D0D1A</item>
+        <item name="android:windowBackground">#0D0D1A</item>
+        <item name="android:statusBarColor">#0D0D1A</item>
+    </style>
+</resources>
