@@ -1283,19 +1283,11 @@ function ReaderScreen({state,setState,nav}) {
 // ─── BOTTOM NAV ──────────────────────────────────────────────────────────────
 function BottomNav({screen,nav,hz,dueCount,musicLabel}) {
   const tabs = [
-<<<<<<< HEAD
-    {id:'cosmos',icon:'◈',label:'Home'},
-    {id:'quiz',icon:'⚡',label:`Quiz${dueCount?` (${dueCount})`:''}`},
-    {id:'freq',icon:'〰',label:hz?`${hz}Hz`:'Freq'},
-    {id:'reader',icon:'📖',label:'Read'},
-    {id:'ai',icon:'∞',label:'AI'},
-=======
     {id:'cosmos', icon:'◈', label:'Home'},
     {id:'quiz',   icon:'⚡', label:`Quiz${dueCount?` (${dueCount})`:''}`},
     {id:'blast',  icon:'💥', label:'Blast'},
-    {id:'music',  icon:'〰', label:musicLabel||'Music'},
+    {id:'reader', icon:'📖', label:'Read'},
     {id:'ai',     icon:'∞', label:'AI'},
->>>>>>> origin/main
   ];
   return (
     <div style={{
@@ -1371,31 +1363,20 @@ export default function AethermindApp() {
   const musicLabel = state.settings.musicTabLabel || 'Music';
 
   const screens = {
-<<<<<<< HEAD
-    cosmos: <CosmosScreen state={state} nav={nav} hz={hz}/>,
-    quiz:   <QuizScreen state={state} setState={setState} nav={nav} hz={hz}/>,
-    cards:  <CardsScreen state={state} nav={nav}/>,
-    freq:   <FreqScreen hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
-    levels: <LevelsScreen state={state} nav={nav}/>,
-    focus:  <FocusScreen state={state} setState={setState} nav={nav} hz={hz}/>,
-    voice:  <VoiceScreen state={state} setState={setState} nav={nav}/>,
-    settings:<SettingsScreen state={state} setState={setState} nav={nav}/>,
-    ai:     <AIScreen state={state} setState={setState} nav={nav}/>,
-    reader: <ReaderScreen state={state} setState={setState} nav={nav}/>,
-=======
     cosmos:   <CosmosScreen state={state} nav={nav} hz={hz}/>,
     drift:    <DriftMode srs={state.srs} onXP={handleBlastXP} voices={voices} hz={hz} onExit={()=>nav('cosmos')}/>,
     quiz:     <QuizView srs={state.srs} onRate={handleQuizRate} themeColor={C.violet} voices={voices}/>,
     blast:    <WordBlast onXP={handleBlastXP} voices={voices} themeColor={C.violet}/>,
     music:    <MusicHubScreen state={state} setState={setState} hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
     cards:    <CardsScreen state={state} nav={nav} speak={speak}/>,
+    freq:     <FreqScreen hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
     levels:   <LevelsScreen state={state} nav={nav}/>,
     focus:    <FocusScreen state={state} setState={setState} nav={nav} hz={hz}/>,
     voice:    <VoiceScreen state={state} setState={setState} nav={nav} speak={speak}/>,
     pair:     <PairMatch state={state} setState={setState} speak={speak}/>,
     settings: <SettingsScreen state={state} setState={setState} nav={nav}/>,
     ai:       <AIScreen state={state} setState={setState} nav={nav}/>,
->>>>>>> origin/main
+    reader:   <ReaderScreen state={state} setState={setState} nav={nav}/>,
   };
 
   return (
