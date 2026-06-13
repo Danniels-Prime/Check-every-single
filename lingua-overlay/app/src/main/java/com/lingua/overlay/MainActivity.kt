@@ -1,18 +1,31 @@
 package com.lingua.overlay
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.lingua.overlay.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    private val requestMicPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            startTranscriptionService()
+        } else {
+            Toast.makeText(this, "Microphone permission required for live transcription", Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +66,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnMic.setOnClickListener {
-            val running = TranscriptionService.isRunning
-            if (running) {
+            if (TranscriptionService.isRunning) {
                 stopService(Intent(this, TranscriptionService::class.java))
                 binding.btnMic.text = "Start Live Transcription"
             } else {
-                startForegroundService(Intent(this, TranscriptionService::class.java))
-                binding.btnMic.text = "Stop Live Transcription"
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                    == PackageManager.PERMISSION_GRANTED) {
+                    startTranscriptionService()
+                } else {
+                    requestMicPermission.launch(Manifest.permission.RECORD_AUDIO)
+                }
             }
         }
+    }
+
+    private fun startTranscriptionService() {
+        startForegroundService(Intent(this, TranscriptionService::class.java))
+        binding.btnMic.text = "Stop Live Transcription"
     }
 
     override fun onResume() {
