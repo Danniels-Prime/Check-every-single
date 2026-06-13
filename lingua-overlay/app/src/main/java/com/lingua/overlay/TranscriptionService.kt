@@ -24,18 +24,23 @@ class TranscriptionService : Service() {
     private val okhttp = OkHttpClient.Builder()
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
-    private var overlay: TranslationOverlayView? = null
+    private var translationOverlay: TranslationOverlayView? = null
+    private var captionOverlay: CaptionOverlayView? = null
     private var recording = false
 
     override fun onCreate() {
         super.onCreate()
-        overlay = TranslationOverlayView(applicationContext)
+        translationOverlay = TranslationOverlayView(applicationContext)
+        captionOverlay = CaptionOverlayView(applicationContext).also { cap ->
+            cap.setOnTranslateListener { text -> translateText(text) }
+        }
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIF_ID, buildNotification())
         isRunning = true
+        captionOverlay?.show()
         startTranscription()
         return START_NOT_STICKY
     }
@@ -43,7 +48,7 @@ class TranscriptionService : Service() {
     private fun startTranscription() {
         val apiKey = Prefs.getDeepgramKey(applicationContext)
         if (apiKey.isBlank()) {
-            stopSelf()
+            captionOverlay?.updateFinal("Add Deepgram API key in Settings")
             return
         }
 
@@ -55,6 +60,7 @@ class TranscriptionService : Service() {
 
         wsClient = okhttp.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                captionOverlay?.updateInterim("Connected — speak now…")
                 startAudioCapture(webSocket)
             }
 
@@ -64,14 +70,18 @@ class TranscriptionService : Service() {
                     val channel = json.optJSONObject("channel") ?: return
                     val alternatives = channel.optJSONArray("alternatives") ?: return
                     val transcript = alternatives.getJSONObject(0).optString("transcript") ?: return
+                    if (transcript.isBlank()) return
                     val isFinal = json.optBoolean("is_final", false)
-                    if (transcript.isNotBlank() && isFinal) {
-                        showTranscriptOverlay(transcript)
+                    if (isFinal) {
+                        captionOverlay?.updateFinal(transcript)
+                    } else {
+                        captionOverlay?.updateInterim(transcript)
                     }
                 } catch (_: Exception) {}
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                captionOverlay?.updateFinal("Connection lost — tap ✕ to close")
                 stopSelf()
             }
         })
@@ -107,23 +117,22 @@ class TranscriptionService : Service() {
         }.start()
     }
 
-    private fun showTranscriptOverlay(transcript: String) {
+    private fun translateText(text: String) {
         val apiKey = Prefs.getClaudeKey(applicationContext)
         if (apiKey.isBlank()) {
-            overlay?.show(transcript, "Add Claude API key in Settings to get explanations", "", "")
+            translationOverlay?.show(text, "Add Claude API key in Settings", "", "")
             return
         }
-
-        overlay?.showLoading(transcript)
+        translationOverlay?.showLoading(text)
         ClaudeApiClient.explain(
-            word = transcript,
+            word = text,
             context = "",
             apiKey = apiKey,
             onResult = { translation, explanation, examples ->
-                overlay?.updateContent(transcript, translation, explanation, examples)
+                translationOverlay?.updateContent(text, translation, explanation, examples)
             },
             onError = { error ->
-                overlay?.showError(transcript, error)
+                translationOverlay?.showError(text, error)
             }
         )
     }
@@ -133,7 +142,8 @@ class TranscriptionService : Service() {
         audioRecord?.stop()
         audioRecord?.release()
         wsClient?.close(1000, "Service stopped")
-        overlay?.destroy()
+        captionOverlay?.hide()
+        translationOverlay?.destroy()
         isRunning = false
         super.onDestroy()
     }
@@ -155,8 +165,8 @@ class TranscriptionService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("LinguaOverlay")
-            .setContentText("Listening… tap words to translate")
+            .setContentTitle("LinguaOverlay — Listening")
+            .setContentText("Tap 'Translate' on the caption strip to explain what you heard")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .addAction(android.R.drawable.ic_media_pause, "Stop", stopIntent)
             .build()
