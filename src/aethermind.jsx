@@ -62,13 +62,13 @@ const DEFAULT = {
     studyMode:'flip_ru_en',cardFontSize:'medium',showCat:true,
     musicTabLabel:'',trackShuffle:false,trackRepeat:false,trackSpeed:1,
   },
-  aiKey:'', voiceRecs:{}, focusMin:25, tracks:[],
+  aiKey:'', voiceRecs:{}, focusMin:25, tracks:[], saved:[],
 };
 
 function loadState() {
   try {
     const d = JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
-    return {...DEFAULT,...d,settings:{...DEFAULT.settings,...(d.settings||{})},tracks:d.tracks||[]};
+    return {...DEFAULT,...d,settings:{...DEFAULT.settings,...(d.settings||{})},tracks:d.tracks||[],saved:d.saved||[]};
   } catch { return {...DEFAULT}; }
 }
 function saveState(s) { try { localStorage.setItem(STORE_KEY,JSON.stringify(s)); } catch {} }
@@ -397,6 +397,13 @@ function LearnScreen({state,setState,nav,speak}) {
 
   const modeLabel = STUDY_MODES.find(m=>m.id===mode)?.label || mode;
 
+  const isSaved = (state.saved||[]).includes(card.id);
+  const toggleSave = () => {
+    const saved = state.saved||[];
+    const ns = {...state, saved: isSaved ? saved.filter(id=>id!==card.id) : [...saved, card.id]};
+    setState(ns); saveState(ns);
+  };
+
   return (
     <div style={{display:'flex',flexDirection:'column',height:'100vh',padding:'0 16px',boxSizing:'border-box'}}>
       <div style={{display:'flex',alignItems:'center',gap:10,paddingTop:16,paddingBottom:8}}>
@@ -406,6 +413,7 @@ function LearnScreen({state,setState,nav,speak}) {
           {mode==='speed'&&(
             <div style={{color:timeLeft<=10?C.rose:C.gold,fontSize:14,fontWeight:700,fontFamily:"'Space Mono',monospace"}}>{timeLeft}s</div>
           )}
+          <button onClick={toggleSave} style={{background:'none',border:'none',cursor:'pointer',fontSize:22,lineHeight:1,color:isSaved?C.gold:C.dim,transition:'color .15s'}}>{isSaved?'★':'☆'}</button>
           <div style={{color:C.dim,fontSize:11,fontFamily:"'Space Mono',monospace"}}>{(idx%pool.length)+1}/{pool.length}</div>
         </div>
       </div>
@@ -439,6 +447,7 @@ function LearnScreen({state,setState,nav,speak}) {
           padding:'10px 20px',fontSize:14,fontFamily:"'Outfit',sans-serif",
         }}>← Back</button>
         <button onClick={()=>nav('cards')} style={{background:'none',border:'none',color:C.dim,fontSize:11,cursor:'pointer'}}>All Cards</button>
+        {(state.saved||[]).length>0&&<button onClick={()=>nav('cards')} style={{background:'none',border:'none',color:C.gold,fontSize:11,cursor:'pointer'}}>★ {(state.saved||[]).length} saved</button>}
         <button onClick={()=>setIdx(i=>i+1)} style={{
           background:`${C.violet}22`,border:`1px solid ${C.violet}66`,borderRadius:12,
           color:C.violet,cursor:'pointer',padding:'10px 20px',fontSize:14,fontWeight:700,fontFamily:"'Outfit',sans-serif",
@@ -576,16 +585,24 @@ function StoriesScreen({nav,speak}) {
 }
 
 // ─── CARDS SCREEN ────────────────────────────────────────────────────────────
-function CardsScreen({state,nav,speak}) {
+function CardsScreen({state,setState,nav,speak}) {
   const [search,setSearch] = useState('');
   const [catFilter,setCatFilter] = useState('ALL');
   const [expanded,setExpanded] = useState(null);
-  const cats = ['ALL',...new Set(VOCAB.map(v=>v.cat))];
+  const cats = ['ALL','SAVED',...new Set(VOCAB.map(v=>v.cat))];
+  const savedIds = state.saved||[];
   const filtered = VOCAB.filter(v=>{
-    if(catFilter!=='ALL'&&v.cat!==catFilter) return false;
+    if(catFilter==='SAVED'&&!savedIds.includes(v.id)) return false;
+    if(catFilter!=='ALL'&&catFilter!=='SAVED'&&v.cat!==catFilter) return false;
     if(search&&!v.ru.toLowerCase().includes(search.toLowerCase())&&!v.en.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const toggleSave = (id,e) => {
+    e.stopPropagation();
+    const ns = {...state, saved: savedIds.includes(id) ? savedIds.filter(x=>x!==id) : [...savedIds, id]};
+    setState(ns); saveState(ns);
+  };
 
   const handleExpand = (id) => {
     const next = expanded===id ? null : id;
@@ -612,6 +629,7 @@ function CardsScreen({state,nav,speak}) {
           <button onClick={()=>nav('cosmos')} style={{background:'none',border:'none',color:C.dim,fontSize:20,cursor:'pointer'}}>←</button>
           <div style={{fontFamily:"'Bebas Neue'",fontSize:24,color:C.violet,letterSpacing:2}}>ALL CARDS</div>
           <span style={{marginLeft:'auto',color:C.dim,fontSize:12}}>{filtered.length}</span>
+          {savedIds.length>0&&<span style={{color:C.gold,fontSize:12}}>★ {savedIds.length}</span>}
         </div>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search cards..."
           style={{width:'100%',background:C.glass,border:`1px solid ${C.dim}44`,borderRadius:10,
@@ -636,10 +654,13 @@ function CardsScreen({state,nav,speak}) {
               style={{marginBottom:8,padding:'12px 14px',cursor:'pointer',
                 borderColor:expanded===v.id?`${C.ultra}66`:`${C.dim}33`}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div>
+                <div style={{flex:1}}>
                   <div style={{color:C.silver,fontSize:16,fontWeight:600}}>{v.ru}</div>
                   <div style={{color:C.dim,fontSize:13}}>{v.en}</div>
                 </div>
+                <button onClick={(e)=>toggleSave(v.id,e)} style={{background:'none',border:'none',cursor:'pointer',fontSize:18,color:savedIds.includes(v.id)?C.gold:C.dim,padding:'0 6px',flexShrink:0}}>
+                  {savedIds.includes(v.id)?'★':'☆'}
+                </button>
                 <div style={{textAlign:'right'}}>
                   <div style={{color:st.color,fontSize:11,fontWeight:600}}>{st.label}</div>
                   <div style={{fontSize:10,color:C.dim}}>{v.cat}</div>
@@ -1631,7 +1652,7 @@ export default function AethermindApp() {
     quiz:     <QuizView srs={state.srs} onRate={handleQuizRate} themeColor={C.violet} voices={voices}/>,
     blast:    <WordBlast onXP={handleBlastXP} voices={voices} themeColor={C.violet}/>,
     music:    <MusicHubScreen state={state} setState={setState} hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
-    cards:    <CardsScreen state={state} nav={nav} speak={speak}/>,
+    cards:    <CardsScreen state={state} setState={setState} nav={nav} speak={speak}/>,
     freq:     <MusicHubScreen state={state} setState={setState} hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
     levels:   <LevelsScreen state={state} nav={nav}/>,
     focus:    <FocusScreen state={state} setState={setState} nav={nav} hz={hz}/>,
