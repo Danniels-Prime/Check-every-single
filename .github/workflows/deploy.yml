@@ -29,11 +29,27 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      # ── ÆTHERMIND (root app) ─────────────────────────────────────────────
+      - name: Install ÆTHERMIND dependencies
         run: npm install
 
-      - name: Build
+      - name: Build ÆTHERMIND
         run: npm run build
+
+      # ── OVERLAYLANG (sub-app at /overlaylang/) ───────────────────────────
+      - name: Install OverlayLang dependencies
+        working-directory: overlaylang-web
+        run: npm install
+
+      - name: Build OverlayLang
+        working-directory: overlaylang-web
+        run: npm run build
+
+      # ── Merge into single artifact ───────────────────────────────────────
+      - name: Merge build outputs
+        run: |
+          mkdir -p dist/overlaylang
+          cp -r overlaylang-web/dist/. dist/overlaylang/
 
       - name: Upload artifact
         if: github.event_name != 'pull_request'
