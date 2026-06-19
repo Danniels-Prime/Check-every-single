@@ -100,6 +100,226 @@ function PhraseCard({ phrase, favs, onFav, accent }) {
   );
 }
 
+// ─── ÆTHERMIND ENGLISH · SLANG LAB ──────────────────────────────────────────
+const SLANG_DATA = {
+  questions: [
+    { q:'Do you like soccer?',     yes:'Yes, I do.',      no:"No, I don't.",    follow:'What sport do you prefer?' },
+    { q:'Do you like music?',      yes:'Yes, I love it!', no:'Not really.',      follow:'What genre?' },
+    { q:'Do you like to cook?',    yes:'Yes, I do!',      no:"No, I don't.",    follow:"What's your favourite dish?" },
+    { q:'Are you okay?',           yes:"Yes, I'm fine.",  no:"No, I'm not.",    follow:'Do you want to talk?' },
+    { q:'Is she your friend?',     yes:'Yes, she is.',    no:"No, she isn't.",  follow:'How long have you known her?' },
+    { q:'Is he coming tonight?',   yes:'Yes, he is.',     no:"No, he isn't.",   follow:'When will he arrive?' },
+    { q:'Is it cold outside?',     yes:'Yes, it is.',     no:"No, it isn't.",   follow:'Do you have a jacket?' },
+  ],
+  slang: [
+    { term:'WYD',      full:'What You Doing?',           meaning:'Asking what someone is up to',          ex:'Hey! WYD tonight?' },
+    { term:'OMG',      full:'Oh My God',                  meaning:'Surprise / shock / excitement',         ex:"OMG I can't believe it!" },
+    { term:'LMAO',     full:'Laughing My A** Off',        meaning:'Something is very funny',               ex:'That joke had me LMAO 😂' },
+    { term:'BBC',      full:'British Broadcasting Corp.', meaning:"UK's national public broadcaster",      ex:'I watched it on BBC last night.' },
+    { term:'RIP',      full:'Rest In Peace',              meaning:'Mourning / also used humorously',       ex:'RIP my phone battery 💀' },
+    { term:'NGL',      full:'Not Gonna Lie',              meaning:'Being honest / confessing',             ex:'NGL that was pretty good.' },
+    { term:'IKR',      full:'I Know, Right?',             meaning:'Agreement / relating to someone',       ex:'IKR, it was so obvious!' },
+    { term:'FR',       full:'For Real',                   meaning:'Seriously / genuinely',                 ex:'FR though, stop playing.' },
+    { term:'GOAT',     full:'Greatest Of All Time',       meaning:'The absolute best',                     ex:'Messi is the GOAT.' },
+    { term:'IYKYK',    full:'If You Know You Know',       meaning:'Inside reference / exclusive vibe',     ex:'IYKYK 😏' },
+    { term:'NPC',      full:'Non-Player Character',       meaning:'Someone who seems robotic/clueless',    ex:'Stop being an NPC bro.' },
+    { term:'SLAY',     full:'—',                          meaning:'To do something amazingly well',        ex:'She absolutely slayed that fit.' },
+    { term:"BUSSIN'",  full:'—',                          meaning:'Extremely good (esp. food)',             ex:"This meal is bussin' fr fr." },
+    { term:'DAWG / G', full:'—',                          meaning:'Close friend / homie',                  ex:"That's my dawg right there." },
+    { term:'BITCH',    full:'—',                          meaning:'Offensive slur; also reclaimed',        ex:'Used in many contexts — be careful!' },
+  ],
+  grammar: [
+    { sub:'She', pos:'She is cute.',      neg:"She isn't cute.",     streetPos:'Yeah she is 🔥',              streetNeg:"Nah she ain't even that." },
+    { sub:'He',  pos:'He is a dawg/G.',   neg:"He isn't like that.", streetPos:"Bro he's a real one.",       streetNeg:"He ain't built different." },
+    { sub:'It',  pos:"It is so bussin'.", neg:"It isn't gross.",     streetPos:"It's hittin' fr fr.",         streetNeg:"Nah it ain't bussin' at all." },
+    { sub:'She', pos:'She is a bitch.',   neg:"She isn't that.",     streetPos:'She on another level ngl.',  streetNeg:"She ain't even worth it." },
+    { sub:'He',  pos:'He is the GOAT.',   neg:"He isn't washed.",    streetPos:"He's the GOAT no cap.",      streetNeg:"He ain't washed, relax." },
+    { sub:'It',  pos:'It is giving.',     neg:"It isn't giving.",    streetPos:"It's giving main char fr.",   streetNeg:"It ain't giving rn tbh." },
+    { sub:'She', pos:'She is iconic.',    neg:"She isn't basic.",    streetPos:'She ate and left no crumbs.', streetNeg:'She def not basic.' },
+    { sub:'He',  pos:'He is goated.',     neg:"He isn't average.",   streetPos:"He's built different ong.",   streetNeg:"He ain't average tho." },
+    { sub:'It',  pos:'It is valid.',      neg:"It isn't that deep.", streetPos:"It's valid, no cap.",         streetNeg:"It ain't even that deep." },
+  ],
+  dialogues: [
+    { a:'WYD rn?',                    b:'Nm just chillin. U?' },
+    { a:"Bro that pizza is bussin'!", b:'IKR? GOAT tier fr fr.' },
+    { a:"She isn't coming tonight.",  b:'OMG RIP the plans lmao.' },
+    { a:'Is he a dawg?',              b:'Yeah he is. Real one NGL.' },
+    { a:'Is it cold outside?',        b:"It isn't that bad. Grab a hoodie." },
+    { a:'Do you like soccer?',        b:'Yes I do! GOAT sport no cap.' },
+    { a:'OMG did you see that?',      b:"FR?? I'm dead LMAO 💀" },
+    { a:'She is giving main char.',   b:'She ate fr. Slay 👑' },
+  ],
+};
+
+function SlangLab() {
+  const [sec, setSec] = useState('slang');
+  const [open, setOpen] = useState(null);
+  const gold = '#ffd700'; const teal = '#00e5ff'; const green = '#00ff88'; const rose = '#ff3366';
+
+  const SECTIONS = [
+    { id:'slang',     icon:'🔥', label:'Slang' },
+    { id:'questions', icon:'💬', label:'Q & A' },
+    { id:'grammar',   icon:'⚡', label:'Grammar' },
+    { id:'dialogues', icon:'🎙', label:'Real Talk' },
+  ];
+
+  return (
+    <div className="fade-up" style={{ padding:'0 0 16px' }}>
+      {/* Header */}
+      <div style={{ padding:'20px 16px 12px', borderBottom:`1px solid ${C.border}` }}>
+        <div style={{ fontWeight:800, fontSize:20, letterSpacing:1,
+          background:`linear-gradient(135deg,${gold},${teal})`,
+          WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
+          ✦ ÆTHERMIND ENGLISH ✦
+        </div>
+        <div style={{ fontSize:11, color:C.dim, letterSpacing:2, marginTop:2 }}>
+          COSMIC LANGUAGE ATLAS · SLANG · GRAMMAR · DIALOGUE
+        </div>
+      </div>
+
+      {/* Section tabs */}
+      <div style={{ display:'flex', gap:8, padding:'12px 16px', overflowX:'auto' }}>
+        {SECTIONS.map(s => (
+          <button key={s.id} onClick={() => { setSec(s.id); setOpen(null); }} style={{
+            flexShrink:0, background: sec===s.id ? `${gold}22` : C.glass,
+            border:`1px solid ${sec===s.id ? gold : C.border}`, borderRadius:20,
+            padding:'6px 16px', fontSize:13, color: sec===s.id ? gold : C.dim,
+            cursor:'pointer', fontFamily:'inherit', fontWeight: sec===s.id ? 700 : 400,
+          }}>{s.icon} {s.label}</button>
+        ))}
+      </div>
+
+      <div style={{ padding:'0 16px' }}>
+
+        {/* SLANG DECODER */}
+        {sec === 'slang' && SLANG_DATA.slang.map((item, i) => (
+          <div key={i} onClick={() => setOpen(open===i ? null : i)} style={{
+            background: C.card, border:`1px solid ${open===i ? gold+'66' : C.border}`,
+            borderRadius:14, padding:'14px 16px', marginBottom:8, cursor:'pointer',
+            boxShadow: open===i ? `0 0 20px ${gold}18` : 'none',
+            transition:'border-color .2s, box-shadow .2s',
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <div style={{ fontWeight:900, fontSize:20, color:gold, minWidth:80, fontFamily:"'Space Mono',monospace" }}>
+                {item.term}
+              </div>
+              {item.full !== '—' && (
+                <div style={{ fontSize:13, color:C.silver, flex:1 }}>{item.full}</div>
+              )}
+              <div style={{ fontSize:16, color: open===i ? gold : C.dim }}>{open===i ? '▲' : '▼'}</div>
+            </div>
+            {open === i && (
+              <div style={{ marginTop:12, paddingTop:12, borderTop:`1px solid ${C.border}`, animation:'fadeUp .2s' }}>
+                <div style={{ fontSize:14, color:teal, marginBottom:8, lineHeight:1.5 }}>
+                  💡 {item.meaning}
+                </div>
+                <div style={{ background:`${gold}10`, border:`1px solid ${gold}22`, borderRadius:10,
+                  padding:'10px 14px', fontSize:13, color:C.silver, fontStyle:'italic', lineHeight:1.6 }}>
+                  "{item.ex}"
+                </div>
+                <button onClick={e => { e.stopPropagation(); speak(item.ex, 'en-US'); }} style={{
+                  marginTop:10, background:`${teal}18`, border:`1px solid ${teal}33`, borderRadius:8,
+                  color:teal, fontSize:12, cursor:'pointer', padding:'5px 12px', fontFamily:'inherit',
+                }}>🔊 Hear it</button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* YES/NO QUESTIONS */}
+        {sec === 'questions' && SLANG_DATA.questions.map((item, i) => (
+          <div key={i} onClick={() => setOpen(open===i ? null : i)} style={{
+            background:C.card, border:`1px solid ${open===i ? teal+'66' : C.border}`,
+            borderRadius:14, padding:'14px 16px', marginBottom:8, cursor:'pointer',
+            transition:'border-color .2s',
+          }}>
+            <div style={{ fontSize:16, fontWeight:700, color:C.silver }}>{item.q}</div>
+            {open === i && (
+              <div style={{ marginTop:12, paddingTop:12, borderTop:`1px solid ${C.border}`, display:'grid', gap:8 }}>
+                <div style={{ display:'flex', gap:8 }}>
+                  <div style={{ flex:1, background:`${green}10`, border:`1px solid ${green}22`,
+                    borderRadius:10, padding:'10px 12px', fontSize:13, color:green }}>
+                    ✅ {item.yes}
+                  </div>
+                  <div style={{ flex:1, background:`${rose}10`, border:`1px solid ${rose}22`,
+                    borderRadius:10, padding:'10px 12px', fontSize:13, color:rose }}>
+                    ❌ {item.no}
+                  </div>
+                </div>
+                <div style={{ background:`${teal}10`, border:`1px solid ${teal}22`, borderRadius:10,
+                  padding:'10px 12px', fontSize:12, color:teal }}>
+                  💬 Follow-up: {item.follow}
+                </div>
+                <button onClick={e => { e.stopPropagation(); speak(item.q, 'en-US'); }} style={{
+                  background:`${teal}18`, border:`1px solid ${teal}33`, borderRadius:8,
+                  color:teal, fontSize:12, cursor:'pointer', padding:'5px 12px', fontFamily:'inherit', alignSelf:'flex-start',
+                }}>🔊 Hear it</button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* GRAMMAR PATTERNS */}
+        {sec === 'grammar' && SLANG_DATA.grammar.map((item, i) => (
+          <div key={i} style={{
+            background:C.card, border:`1px solid ${C.border}`, borderRadius:14,
+            padding:'14px 16px', marginBottom:8,
+          }}>
+            <div style={{ fontSize:12, color:C.dim, fontWeight:700, letterSpacing:2, marginBottom:8 }}>{item.sub}</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
+              <div style={{ background:`${green}10`, border:`1px solid ${green}22`, borderRadius:10,
+                padding:'8px 12px', fontSize:13, color:green }}>✅ {item.pos}</div>
+              <div style={{ background:`${rose}10`, border:`1px solid ${rose}22`, borderRadius:10,
+                padding:'8px 12px', fontSize:13, color:rose }}>❌ {item.neg}</div>
+            </div>
+            <div style={{ fontSize:10, color:C.dim, fontWeight:700, letterSpacing:2, marginBottom:6 }}>🗣️ STREET</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+              <div style={{ background:`${gold}10`, border:`1px solid ${gold}22`, borderRadius:10,
+                padding:'8px 12px', fontSize:12, color:gold, fontStyle:'italic' }}>"{item.streetPos}"</div>
+              <div style={{ background:`${C.dim}18`, border:`1px solid ${C.border}`, borderRadius:10,
+                padding:'8px 12px', fontSize:12, color:C.dim, fontStyle:'italic' }}>"{item.streetNeg}"</div>
+            </div>
+          </div>
+        ))}
+
+        {/* REAL TALK DIALOGUES */}
+        {sec === 'dialogues' && SLANG_DATA.dialogues.map((item, i) => (
+          <div key={i} style={{
+            background:C.card, border:`1px solid ${C.border}`, borderRadius:14,
+            padding:'16px', marginBottom:10,
+          }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <div style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
+                <div style={{ background:`${teal}22`, border:`1px solid ${teal}44`, borderRadius:'50%',
+                  width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:11, fontWeight:800, color:teal, flexShrink:0 }}>A</div>
+                <div style={{ background:`${teal}0d`, border:`1px solid ${teal}22`, borderRadius:'0 12px 12px 12px',
+                  padding:'10px 14px', flex:1 }}>
+                  <div style={{ fontSize:15, fontWeight:700, color:C.silver }}>{item.a}</div>
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:10, alignItems:'flex-start', flexDirection:'row-reverse' }}>
+                <div style={{ background:`${gold}22`, border:`1px solid ${gold}44`, borderRadius:'50%',
+                  width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:11, fontWeight:800, color:gold, flexShrink:0 }}>B</div>
+                <div style={{ background:`${gold}0d`, border:`1px solid ${gold}22`, borderRadius:'12px 0 12px 12px',
+                  padding:'10px 14px', flex:1, textAlign:'right' }}>
+                  <div style={{ fontSize:15, fontWeight:700, color:C.silver }}>{item.b}</div>
+                </div>
+              </div>
+            </div>
+            <button onClick={() => { speak(item.a, 'en-US'); setTimeout(() => speak(item.b, 'en-US'), 2200); }} style={{
+              marginTop:12, background:`${teal}18`, border:`1px solid ${teal}33`, borderRadius:8,
+              color:teal, fontSize:12, cursor:'pointer', padding:'5px 12px', fontFamily:'inherit',
+            }}>🔊 Play dialogue</button>
+          </div>
+        ))}
+
+      </div>
+    </div>
+  );
+}
+
 // ─── APP ─────────────────────────────────────────────────────────────────────
 export default function App() {
   const [tab, setTab]       = useState('browse');   // browse | search | favs | translate
@@ -167,6 +387,7 @@ export default function App() {
     { id: 'search',    icon: '🔍', label: 'Search' },
     { id: 'translate', icon: '⇄',  label: 'Translate' },
     { id: 'favs',      icon: '★',  label: 'Saved' },
+    { id: 'slang',     icon: '🔥', label: 'Slang Lab' },
   ];
 
   return (
@@ -376,6 +597,9 @@ export default function App() {
             )}
           </div>
         )}
+
+        {/* SLANG LAB TAB */}
+        {tab === 'slang' && <SlangLab />}
 
         {/* FAVS TAB */}
         {tab === 'favs' && (
