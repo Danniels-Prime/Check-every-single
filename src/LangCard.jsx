@@ -216,9 +216,15 @@ export default function LangCard({
       {!isFlipped && !isReversed && (
         <div style={{ fontSize:11, color:'#44406a', fontStyle:'italic' }}>{item.pr}</div>
       )}
+      {!isFlipped && item.ex_ru && (
+        <div style={{ fontSize:10, color:'#5a5880', fontStyle:'italic', lineHeight:1.4,
+          borderLeft:'2px solid #44406a55', paddingLeft:6, marginTop:4, width:'100%', textAlign:'left' }}>
+          🇷🇺 "{item.ex_ru}"
+        </div>
+      )}
       {!isFlipped && (
         <div style={{ fontSize:10, color:'#3d3b60', fontWeight:700, marginTop:'auto' }}>
-          👆 tap · hear 🔊 · rate ✅❌
+          👆 tap to reveal · 🔊 auto-speaks
         </div>
       )}
       {isFlipped && (
@@ -231,9 +237,10 @@ export default function LangCard({
           </div>
           {isReversed && <div style={{ fontSize:11, color:'#44406a', fontStyle:'italic' }}>{item.pr}</div>}
           {item.ex_ru && (
-            <div style={{ fontSize:10, color:'#44406a', lineHeight:1.4, fontStyle:'italic',
-              borderLeft:`2px solid ${cc}40`, paddingLeft:6, marginTop:2, textAlign:'left', width:'100%' }}>
-              "{item.ex_ru}"
+            <div style={{ fontSize:10, lineHeight:1.5, borderLeft:`2px solid ${cc}40`,
+              paddingLeft:6, marginTop:2, width:'100%' }}>
+              <div style={{ color:'#7a7898', fontStyle:'italic' }}>🇷🇺 "{item.ex_ru}"</div>
+              {item.ex_en && <div style={{ color:'#4a4868', fontStyle:'italic', marginTop:2 }}>🇬🇧 "{item.ex_en}"</div>}
             </div>
           )}
           <ActionRow/>

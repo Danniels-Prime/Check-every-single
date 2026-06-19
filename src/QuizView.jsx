@@ -51,14 +51,26 @@ export default function QuizView({ srs = {}, onRate, themeColor = '#c77dff', voi
   const card   = queue[idx];
   const isDone = !card && (sessionEasy + sessionAgain > 0);
 
-  const speak = useCallback((text) => {
+  const speak = useCallback((text, example) => {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'ru-RU'; utt.rate = 0.85;
     const voice = voices.find(v => v.lang === 'ru-RU') || voices.find(v => v.lang.startsWith('ru'));
-    if (voice) utt.voice = voice;
-    window.speechSynthesis.speak(utt);
+    const mkUtt = (t, rate) => {
+      const u = new SpeechSynthesisUtterance(t);
+      u.lang = 'ru-RU'; u.rate = rate;
+      if (voice) u.voice = voice;
+      return u;
+    };
+    const wordUtt = mkUtt(text, 0.82);
+    window.speechSynthesis.speak(wordUtt);
+    if (example) {
+      const delay = Math.max(700, Math.round(text.length * 90 / 0.82)) + 350;
+      const exUtt = mkUtt(example, 0.78);
+      let fired = false;
+      const fire = () => { if (!fired) { fired = true; window.speechSynthesis.speak(exUtt); } };
+      wordUtt.onend = () => setTimeout(fire, 350);
+      setTimeout(fire, delay);
+    }
   }, [voices]);
 
   useEffect(() => {
@@ -76,7 +88,7 @@ export default function QuizView({ srs = {}, onRate, themeColor = '#c77dff', voi
 
   useEffect(() => {
     if (card && !typeMode) {
-      const t = setTimeout(() => speak(card.ru), 350);
+      const t = setTimeout(() => speak(card.ru, card.ex_ru), 350);
       return () => clearTimeout(t);
     }
   }, [idx]); // eslint-disable-line react-hooks/exhaustive-deps
