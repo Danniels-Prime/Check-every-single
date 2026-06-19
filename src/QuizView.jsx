@@ -218,13 +218,13 @@ export default function QuizView({ srs = {}, onRate, themeColor = '#c77dff', voi
 
         {/* Russian word (front) */}
         <div style={{
-          fontFamily:"'Bebas Neue'", fontSize: card.ru.length > 20 ? 32 : 48,
+          fontFamily:"'Bebas Neue'", fontSize: card.ru.length > 20 ? 44 : card.ru.length > 12 ? 56 : 68,
           color:tc, letterSpacing:2, textAlign:'center', lineHeight:1.1,
           textShadow:`0 0 20px ${tc}55`,
         }}>{card.ru}</div>
 
         {/* Pronunciation */}
-        <div style={{ color:C.dim, fontSize:12, fontStyle:'italic', fontFamily:"'Space Mono',monospace", marginTop:4 }}>
+        <div style={{ color:'#6a6890', fontSize:16, fontStyle:'italic', fontFamily:"'Space Mono',monospace", marginTop:6, textAlign:'center' }}>
           {card.pr}
         </div>
 
@@ -241,10 +241,10 @@ export default function QuizView({ srs = {}, onRate, themeColor = '#c77dff', voi
             </div>
             {card.ex_ru && (
               <div style={{ marginTop:10, textAlign:'left', borderTop:`1px solid ${C.dim}22`, paddingTop:10 }}>
-                <div style={{ fontSize:12, color:`${C.silver}88`, lineHeight:1.5, fontStyle:'italic', marginBottom:4 }}>
+                <div style={{ fontSize:14, color:'#8a88a8', lineHeight:1.5, fontStyle:'italic', marginBottom:4 }}>
                   🇷🇺 "{card.ex_ru}"
                 </div>
-                <div style={{ fontSize:11, color:C.dim, lineHeight:1.4, fontStyle:'italic' }}>
+                <div style={{ fontSize:13, color:C.dim, lineHeight:1.4, fontStyle:'italic' }}>
                   🇬🇧 "{card.ex_en}"
                 </div>
               </div>

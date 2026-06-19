@@ -43,7 +43,7 @@ export default function LangCard({
 
   const cc = themeColor;
   const scale = cardFontSize === 'large' ? 1.2 : cardFontSize === 'small' ? 0.82 : 1;
-  const fs_ru = Math.round((item.ru.length > 26 ? 14 : item.ru.length > 18 ? 17 : item.ru.length > 12 ? 20 : 24) * scale);
+  const fs_ru = Math.round((item.ru.length > 26 ? 24 : item.ru.length > 18 ? 30 : item.ru.length > 12 ? 36 : 46) * scale);
   const fs_en = Math.round((item.en.length > 30 ? 17 : item.en.length > 20 ? 20 : item.en.length > 12 ? 23 : 27) * scale);
 
   const isReversed = studyMode === 'flip_en_ru' ||
@@ -105,11 +105,11 @@ export default function LangCard({
       <div style={{ ...base, cursor:'default' }}>
         <div style={{ fontSize:10, color:'#FFD700', fontWeight:800, letterSpacing:1 }}>🇷🇺 RU</div>
         <div style={{ fontSize:fs_ru, fontWeight:900, color:'#FFD700', lineHeight:1.2, textAlign:'center' }}>{item.ru}</div>
-        <div style={{ fontSize:11, color:'#44406a', fontStyle:'italic' }}>{item.pr}</div>
+        <div style={{ fontSize:16, color:'#6a6890', fontStyle:'italic', fontFamily:"'Space Mono',monospace" }}>{item.pr}</div>
         <div style={{ width:'100%', height:1, background:'rgba(255,255,255,0.07)', margin:'3px 0' }}/>
         <div style={{ fontSize:10, color:cc, fontWeight:800, letterSpacing:1 }}>🇬🇧 EN</div>
         <div style={{ fontSize:fs_en, fontWeight:900, color:cc, lineHeight:1.2, textAlign:'center', textShadow:`0 0 14px ${cc}60` }}>{item.en}</div>
-        {item.ex_ru && <div style={{ fontSize:10, color:'#44406a', fontStyle:'italic', textAlign:'center', lineHeight:1.4 }}>{item.ex_ru}</div>}
+        {item.ex_ru && <div style={{ fontSize:14, color:'#6a6890', fontStyle:'italic', textAlign:'center', lineHeight:1.4 }}>{item.ex_ru}</div>}
         <ActionRow/>
       </div>
     );
@@ -122,7 +122,7 @@ export default function LangCard({
         onClick={() => !showInput && !typeResult && setShowInput(true)}>
         <div style={{ fontSize:10, color:'#FFD700', fontWeight:800, letterSpacing:1 }}>🇷🇺 RU</div>
         <div style={{ fontSize:fs_ru, fontWeight:900, color:'#FFD700', lineHeight:1.2, textAlign:'center' }}>{item.ru}</div>
-        <div style={{ fontSize:11, color:'#44406a', fontStyle:'italic' }}>{item.pr}</div>
+        <div style={{ fontSize:16, color:'#6a6890', fontStyle:'italic', fontFamily:"'Space Mono',monospace" }}>{item.pr}</div>
         {!showInput && !typeResult && (
           <div style={{ fontSize:10, color:'#3d3b60', fontWeight:700, marginTop:'auto' }}>⌨️ tap to type English</div>
         )}
@@ -182,7 +182,7 @@ export default function LangCard({
             <p style={{ fontSize:12, fontWeight:800, color:typeResult==='correct'?'#00FF88':'#FF006E', textAlign:'center' }}>
               {typeResult==='correct' ? '🎯 Correct!' : item.en}
             </p>
-            <p style={{ fontSize:10, color:'#5e5c88', textAlign:'center' }}>🇷🇺 {item.ru}</p>
+            <p style={{ fontSize:24, fontWeight:800, color:'#FFD700', textAlign:'center' }}>{item.ru}</p>
             <div style={{ display:'flex', gap:6, justifyContent:'center' }} onClick={e => e.stopPropagation()}>
               <button onClick={() => { onRate(true); reset(); }} style={{
                 background:'#00ff8822', border:'1px solid #00ff8855', borderRadius:8,
@@ -214,10 +214,10 @@ export default function LangCard({
         {frontText}
       </div>
       {!isFlipped && !isReversed && (
-        <div style={{ fontSize:11, color:'#44406a', fontStyle:'italic' }}>{item.pr}</div>
+        <div style={{ fontSize:16, color:'#6a6890', fontStyle:'italic', fontFamily:"'Space Mono',monospace" }}>{item.pr}</div>
       )}
       {!isFlipped && item.ex_ru && (
-        <div style={{ fontSize:10, color:'#5a5880', fontStyle:'italic', lineHeight:1.4,
+        <div style={{ fontSize:14, color:'#6a6890', fontStyle:'italic', lineHeight:1.4,
           borderLeft:'2px solid #44406a55', paddingLeft:6, marginTop:4, width:'100%', textAlign:'left' }}>
           🇷🇺 "{item.ex_ru}"
         </div>
@@ -235,12 +235,12 @@ export default function LangCard({
             textShadow:`0 0 20px ${backColor},0 0 40px ${backColor}60`, letterSpacing:'-0.3px' }}>
             {backText}
           </div>
-          {isReversed && <div style={{ fontSize:11, color:'#44406a', fontStyle:'italic' }}>{item.pr}</div>}
+          {isReversed && <div style={{ fontSize:16, color:'#6a6890', fontStyle:'italic', fontFamily:"'Space Mono',monospace" }}>{item.pr}</div>}
           {item.ex_ru && (
-            <div style={{ fontSize:10, lineHeight:1.5, borderLeft:`2px solid ${cc}40`,
-              paddingLeft:6, marginTop:2, width:'100%' }}>
-              <div style={{ color:'#7a7898', fontStyle:'italic' }}>🇷🇺 "{item.ex_ru}"</div>
-              {item.ex_en && <div style={{ color:'#4a4868', fontStyle:'italic', marginTop:2 }}>🇬🇧 "{item.ex_en}"</div>}
+            <div style={{ lineHeight:1.5, borderLeft:`2px solid ${cc}40`,
+              paddingLeft:8, marginTop:4, width:'100%' }}>
+              <div style={{ fontSize:14, color:'#8a88a8', fontStyle:'italic' }}>🇷🇺 "{item.ex_ru}"</div>
+              {item.ex_en && <div style={{ fontSize:12, color:'#5a587a', fontStyle:'italic', marginTop:3 }}>🇬🇧 "{item.ex_en}"</div>}
             </div>
           )}
           <ActionRow/>

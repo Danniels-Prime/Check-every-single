@@ -556,13 +556,13 @@ function StoriesScreen({nav,speak}) {
                     }}>{speaking?'▶▶':'🔊'}</button>
                   )}
                 </div>
-                <div style={{fontSize:isCurrent?20:16,fontWeight:700,color:isCurrent?C.silver:'#888',lineHeight:1.3,marginBottom:4}}>
+                <div style={{fontSize:isCurrent?28:18,fontWeight:700,color:isCurrent?'#FFD700':'#888',lineHeight:1.3,marginBottom:4}}>
                   {ln.ru}
                 </div>
                 {isCurrent&&(
                   <>
-                    <div style={{fontSize:11,color:C.dim,fontStyle:'italic',fontFamily:"'Space Mono',monospace",marginBottom:6}}>{ln.pr}</div>
-                    <div style={{fontSize:13,color:`${C.silver}99`,borderLeft:`2px solid ${C.cyan}44`,paddingLeft:8}}>{ln.en}</div>
+                    <div style={{fontSize:16,color:'#6a6890',fontStyle:'italic',fontFamily:"'Space Mono',monospace",marginBottom:8}}>{ln.pr}</div>
+                    <div style={{fontSize:14,color:`${C.silver}99`,borderLeft:`2px solid ${C.cyan}44`,paddingLeft:8}}>{ln.en}</div>
                   </>
                 )}
               </Glass>
@@ -664,7 +664,7 @@ function CardsScreen({state,setState,nav,speak}) {
                 borderColor:expanded===v.id?`${C.ultra}66`:`${C.dim}33`}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div style={{flex:1}}>
-                  <div style={{color:C.silver,fontSize:16,fontWeight:600}}>{v.ru}</div>
+                  <div style={{color:'#FFD700',fontSize:22,fontWeight:700}}>{v.ru}</div>
                   <div style={{color:C.dim,fontSize:13}}>{v.en}</div>
                 </div>
                 <button onClick={(e)=>toggleSave(v.id,e)} style={{background:'none',border:'none',cursor:'pointer',fontSize:18,color:savedIds.includes(v.id)?C.gold:C.dim,padding:'0 6px',flexShrink:0}}>
@@ -677,7 +677,7 @@ function CardsScreen({state,setState,nav,speak}) {
               </div>
               {expanded===v.id&&(
                 <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.dim}33`,animation:'fadeIn .2s'}}>
-                  <div style={{color:C.dim,fontSize:12,fontFamily:"'Space Mono',monospace",fontStyle:'italic',marginBottom:6}}>{v.pr}</div>
+                  <div style={{color:'#6a6890',fontSize:15,fontFamily:"'Space Mono',monospace",fontStyle:'italic',marginBottom:6}}>{v.pr}</div>
                   <div style={{background:`${C.ultra}11`,borderRadius:8,padding:'8px 10px',fontSize:12}}>
                     <div style={{color:C.silver,marginBottom:2}}>{v.ex_ru}</div>
                     <div style={{color:C.dim}}>{v.ex_en}</div>
