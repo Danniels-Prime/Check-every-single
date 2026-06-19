@@ -107,11 +107,16 @@ function makeSpeaker(voices) {
       return utt;
     };
     const wordUtt = mkUtt(ruWord, 0.82);
-    if (ruExample) {
-      const exUtt = mkUtt(ruExample, 0.78);
-      wordUtt.onend = () => setTimeout(() => synth.speak(exUtt), 400);
-    }
     synth.speak(wordUtt);
+    if (ruExample) {
+      // Estimate word duration (ms): ~90ms per char at rate 0.82, min 700ms
+      const delay = Math.max(700, Math.round(ruWord.length * 90 / 0.82)) + 350;
+      const exUtt = mkUtt(ruExample, 0.78);
+      let fired = false;
+      const fire = () => { if (!fired) { fired = true; synth.speak(exUtt); } };
+      wordUtt.onend = () => setTimeout(fire, 350);
+      setTimeout(fire, delay);
+    }
   };
 }
 
