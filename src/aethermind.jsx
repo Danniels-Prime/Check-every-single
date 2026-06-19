@@ -561,8 +561,8 @@ function StoriesScreen({nav,speak}) {
                 </div>
                 {isCurrent&&(
                   <>
-                    <div style={{fontSize:16,color:'#6a6890',fontStyle:'italic',fontFamily:"'Space Mono',monospace",marginBottom:8}}>{ln.pr}</div>
-                    <div style={{fontSize:14,color:`${C.silver}99`,borderLeft:`2px solid ${C.cyan}44`,paddingLeft:8}}>{ln.en}</div>
+                    <div style={{fontSize:20,color:'#8a88b8',fontStyle:'italic',fontFamily:"'Space Mono',monospace",marginBottom:10,lineHeight:1.4}}>{ln.pr}</div>
+                    <div style={{fontSize:17,color:C.silver,borderLeft:`2px solid ${C.cyan}55`,paddingLeft:10,lineHeight:1.5}}>{ln.en}</div>
                   </>
                 )}
               </Glass>
