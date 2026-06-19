@@ -1632,7 +1632,7 @@ export default function AethermindApp() {
     blast:    <WordBlast onXP={handleBlastXP} voices={voices} themeColor={C.violet}/>,
     music:    <MusicHubScreen state={state} setState={setState} hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
     cards:    <CardsScreen state={state} nav={nav} speak={speak}/>,
-    freq:     <FreqScreen hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
+    freq:     <MusicHubScreen state={state} setState={setState} hz={hz} setHz={setHz} audioHook={audioHook} nav={nav}/>,
     levels:   <LevelsScreen state={state} nav={nav}/>,
     focus:    <FocusScreen state={state} setState={setState} nav={nav} hz={hz}/>,
     voice:    <VoiceScreen state={state} setState={setState} nav={nav} speak={speak}/>,
