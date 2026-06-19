@@ -6,6 +6,7 @@ import WordBlast from './WordBlast.jsx';
 import LangCard from './LangCard.jsx';
 import { saveBlob, getBlob, deleteBlob, clearAllBlobs } from './trackDB.js';
 import DriftMode from './DriftMode.jsx';
+import { STORIES } from './stories.js';
 
 const C = {
   void:'#03010a',deep:'#080810',card:'#0e0c1a',glass:'#14102a',
@@ -294,21 +295,281 @@ function CosmosScreen({state,nav,hz}) {
         <div style={{fontSize:11,color:C.dim,marginTop:4,textAlign:'right'}}>{nextLv.n>lv.n?`${nextLv.xp-state.xp} XP to Lv.${nextLv.n}`:'MAX LEVEL'}</div>
       </Glass>
 
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
         {[
-          {label:'Lucid Drift',icon:'🌊',screen:'drift',color:C.cyan},
+          {label:'Study',icon:'📚',screen:'learn',color:C.violet},
+          {label:'Stories',icon:'💬',screen:'stories',color:C.cyan},
+          {label:'Lucid Drift',icon:'🌊',screen:'drift',color:C.teal},
           {label:'Voice Lab',icon:'🎙',screen:'voice',color:C.rose},
           {label:'Focus',icon:'◎',screen:'focus',color:C.gold},
-          {label:'All Cards',icon:'⚡',screen:'cards',color:C.violet},
-          {label:'Levels',icon:'▲',screen:'levels',color:C.acid},
+          {label:'All Cards',icon:'⚡',screen:'cards',color:C.acid},
+          {label:'Levels',icon:'▲',screen:'levels',color:C.amber},
           {label:'Settings',icon:'⚙',screen:'settings',color:C.dim},
           {label:'Read',icon:'📖',screen:'reader',color:C.teal},
         ].map(btn=>(
           <Glass key={btn.screen} onClick={()=>nav(btn.screen)} style={{padding:'14px 8px',textAlign:'center',cursor:'pointer',borderColor:`${btn.color}33`}}>
-            <div style={{fontSize:20}}>{btn.icon}</div>
-            <div style={{fontSize:11,color:btn.color,marginTop:4,fontWeight:600}}>{btn.label}</div>
+            <div style={{fontSize:22}}>{btn.icon}</div>
+            <div style={{fontSize:12,color:btn.color,marginTop:5,fontWeight:600}}>{btn.label}</div>
           </Glass>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── LEARN SCREEN (flashcard study with auto-speak) ──────────────────────────
+function LearnScreen({state,setState,nav,speak}) {
+  const mode = state.settings.studyMode;
+  const fontSz = state.settings.cardFontSize || 'medium';
+
+  const pool = useMemo(() => {
+    const now = Date.now();
+    if (mode === 'weak') {
+      const weak = VOCAB.filter(v => {
+        const s = state.srs[v.id];
+        return s && s.reps === 0;
+      });
+      return weak.length > 2 ? [...weak].sort(()=>Math.random()-.5) : [...VOCAB].sort(()=>Math.random()-.5);
+    }
+    const due = VOCAB.filter(v => { const s=state.srs[v.id]; return !s||now>=s.nextReview; });
+    const base = due.length >= 3 ? due : VOCAB;
+    return [...base].sort(()=>Math.random()-.5);
+  }, []); // eslint-disable-line
+
+  const [idx,setIdx]           = useState(0);
+  const [isFlipped,setIsFlipped] = useState(false);
+  const [rateStatus,setRateStatus] = useState(null);
+  const [isPlaying,setIsPlaying] = useState(false);
+  const [timeLeft,setTimeLeft]  = useState(30);
+
+  const card = pool[idx % pool.length];
+
+  // Whether Russian appears as the front face for this card+mode
+  const isRuFront = !(
+    mode === 'flip_en_ru' ||
+    (mode === 'flip_random' && card.id.charCodeAt(card.id.length-1) % 2 === 1)
+  );
+
+  const doSpeak = useCallback(() => {
+    speak(card.ru, card.ex_ru);
+    setIsPlaying(true);
+    setTimeout(() => setIsPlaying(false), 2800);
+  }, [card, speak]);
+
+  // Auto-speak on card change
+  useEffect(() => {
+    setIsFlipped(false);
+    setRateStatus(null);
+    // For EN-front modes (flip_en_ru / flip_random reversed), wait for the flip
+    if (isRuFront) doSpeak();
+  }, [idx]); // eslint-disable-line
+
+  // Auto-speak when flipped to reveal Russian
+  useEffect(() => {
+    if (isFlipped && !isRuFront) doSpeak();
+  }, [isFlipped]); // eslint-disable-line
+
+  // Speed drill countdown
+  useEffect(() => {
+    if (mode !== 'speed') return;
+    setTimeLeft(30);
+    const iv = setInterval(() => {
+      setTimeLeft(t => { if (t<=1){setIdx(i=>i+1);return 30;} return t-1; });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [idx,mode]);
+
+  const handleRate = (correct) => {
+    const newSrs = processAnswer(state.srs, card.id, correct?'easy':'again');
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now()-86400000).toDateString();
+    const ns = {
+      ...state,
+      srs: newSrs,
+      xp: state.xp + (correct?12:2),
+      streak: state.lastStudied===today ? state.streak : (state.lastStudied===yesterday?state.streak+1:1),
+      lastStudied: today,
+    };
+    setState(ns);
+    setRateStatus(correct?'yes':'no');
+    setTimeout(()=>setIdx(i=>i+1), 450);
+  };
+
+  const modeLabel = STUDY_MODES.find(m=>m.id===mode)?.label || mode;
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100vh',padding:'0 16px',boxSizing:'border-box'}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,paddingTop:16,paddingBottom:8}}>
+        <button onClick={()=>nav('cosmos')} style={{background:'none',border:'none',color:C.dim,fontSize:20,cursor:'pointer'}}>←</button>
+        <div style={{fontFamily:"'Bebas Neue'",fontSize:22,color:C.violet,letterSpacing:2}}>STUDY</div>
+        <div style={{marginLeft:'auto',display:'flex',gap:10,alignItems:'center'}}>
+          {mode==='speed'&&(
+            <div style={{color:timeLeft<=10?C.rose:C.gold,fontSize:14,fontWeight:700,fontFamily:"'Space Mono',monospace"}}>{timeLeft}s</div>
+          )}
+          <div style={{color:C.dim,fontSize:11,fontFamily:"'Space Mono',monospace"}}>{(idx%pool.length)+1}/{pool.length}</div>
+        </div>
+      </div>
+
+      <div style={{display:'flex',justifyContent:'center',gap:8,marginBottom:12}}>
+        <div style={{background:`${C.violet}18`,border:`1px solid ${C.violet}33`,borderRadius:20,padding:'3px 12px',fontSize:10,color:C.violet,letterSpacing:1}}>{modeLabel}</div>
+        <div onClick={()=>nav('settings')} style={{background:C.glass,border:`1px solid ${C.dim}22`,borderRadius:20,padding:'3px 12px',fontSize:10,color:C.dim,cursor:'pointer',letterSpacing:1}}>⚙ Change mode</div>
+      </div>
+
+      <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center'}}>
+        <LangCard
+          key={card.id}
+          item={card}
+          themeColor={C.violet}
+          isFlipped={isFlipped}
+          onFlip={()=>setIsFlipped(f=>!f)}
+          onSpeak={doSpeak}
+          isPlaying={isPlaying}
+          rateStatus={rateStatus}
+          onRate={handleRate}
+          studyMode={mode}
+          cardFontSize={fontSz}
+          autoPlay={!isRuFront}
+        />
+      </div>
+
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0 32px'}}>
+        <button onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0} style={{
+          background:C.glass,border:`1px solid ${C.dim}33`,borderRadius:12,
+          color:idx===0?`${C.dim}55`:'#fff',cursor:idx===0?'default':'pointer',
+          padding:'10px 20px',fontSize:14,fontFamily:"'Outfit',sans-serif",
+        }}>← Back</button>
+        <button onClick={()=>nav('cards')} style={{background:'none',border:'none',color:C.dim,fontSize:11,cursor:'pointer'}}>All Cards</button>
+        <button onClick={()=>setIdx(i=>i+1)} style={{
+          background:`${C.violet}22`,border:`1px solid ${C.violet}66`,borderRadius:12,
+          color:C.violet,cursor:'pointer',padding:'10px 20px',fontSize:14,fontWeight:700,fontFamily:"'Outfit',sans-serif",
+        }}>Next →</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── STORIES SCREEN ───────────────────────────────────────────────────────────
+function StoriesScreen({nav,speak}) {
+  const [selected,setSelected] = useState(null);
+  const [lineIdx,setLineIdx]   = useState(0);
+  const [speaking,setSpeaking] = useState(false);
+
+  const doSpeakLine = useCallback((line) => {
+    speak(line.ru, null);
+    setSpeaking(true);
+    setTimeout(()=>setSpeaking(false), 2200);
+  }, [speak]);
+
+  useEffect(() => {
+    if (selected===null) return;
+    const line = STORIES[selected].lines[lineIdx];
+    const t = setTimeout(()=>doSpeakLine(line), 300);
+    return ()=>clearTimeout(t);
+  }, [selected,lineIdx]); // eslint-disable-line
+
+  if (selected===null) {
+    return (
+      <div style={{padding:'16px 16px 90px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+          <button onClick={()=>nav('cosmos')} style={{background:'none',border:'none',color:C.dim,fontSize:20,cursor:'pointer'}}>←</button>
+          <div style={{fontFamily:"'Bebas Neue'",fontSize:26,color:C.cyan,letterSpacing:3}}>STORIES</div>
+          <div style={{marginLeft:'auto',color:C.dim,fontSize:11,fontFamily:"'Space Mono',monospace"}}>{STORIES.length} scenes</div>
+        </div>
+        <div style={{color:C.dim,fontSize:12,marginBottom:16,lineHeight:1.6,letterSpacing:.5}}>
+          Real native conversations. Tap a scene to listen and follow along.
+        </div>
+        <div style={{display:'grid',gap:12}}>
+          {STORIES.map((s,i)=>(
+            <Glass key={s.id} onClick={()=>{setSelected(i);setLineIdx(0);}} style={{padding:'16px 18px',cursor:'pointer',borderColor:`${C.cyan}22`}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                <div>
+                  <div style={{color:C.silver,fontSize:16,fontWeight:700}}>{s.title}</div>
+                  <div style={{color:C.dim,fontSize:12,marginTop:2}}>{s.en_title}</div>
+                </div>
+                <div style={{background:`${C.cyan}18`,border:`1px solid ${C.cyan}33`,borderRadius:20,padding:'3px 10px',fontSize:10,color:C.cyan,whiteSpace:'nowrap'}}>{s.topic}</div>
+              </div>
+              <div style={{color:`${C.dim}88`,fontSize:11,marginTop:8}}>{s.lines.length} lines</div>
+            </Glass>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const story = STORIES[selected];
+  const line  = story.lines[lineIdx];
+  const isLast = lineIdx >= story.lines.length-1;
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100vh',padding:'0 16px',boxSizing:'border-box'}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,paddingTop:16,paddingBottom:12}}>
+        <button onClick={()=>setSelected(null)} style={{background:'none',border:'none',color:C.dim,fontSize:20,cursor:'pointer'}}>←</button>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:"'Bebas Neue'",fontSize:18,color:C.cyan,letterSpacing:2,lineHeight:1}}>{story.title}</div>
+          <div style={{fontSize:10,color:C.dim,letterSpacing:1}}>{story.topic}</div>
+        </div>
+        <div style={{color:C.dim,fontSize:11,fontFamily:"'Space Mono',monospace"}}>{lineIdx+1}/{story.lines.length}</div>
+      </div>
+
+      {/* All lines above current (context) */}
+      <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:10,paddingBottom:12}}>
+        {story.lines.map((ln,i)=>{
+          const isCurrent = i===lineIdx;
+          const isPast    = i<lineIdx;
+          return (
+            <div key={i} onClick={()=>{setLineIdx(i);}} style={{
+              opacity: isCurrent?1:isPast?.6:.25,
+              cursor:'pointer',
+              transition:'opacity .3s',
+            }}>
+              <Glass style={{
+                padding:'14px 16px',
+                borderColor:isCurrent?`${C.cyan}66`:`${C.dim}22`,
+                boxShadow:isCurrent?`0 0 24px ${C.cyan}22`:'none',
+              }}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                  <div style={{fontSize:10,color:isCurrent?C.cyan:C.dim,fontWeight:700,letterSpacing:2}}>
+                    {ln.speaker}
+                  </div>
+                  {isCurrent&&(
+                    <button onClick={e=>{e.stopPropagation();doSpeakLine(ln);}} style={{
+                      background:'none',border:`1px solid ${C.cyan}44`,borderRadius:8,
+                      color:speaking?C.cyan:C.dim,fontSize:12,cursor:'pointer',padding:'2px 8px',
+                    }}>{speaking?'▶▶':'🔊'}</button>
+                  )}
+                </div>
+                <div style={{fontSize:isCurrent?20:16,fontWeight:700,color:isCurrent?C.silver:'#888',lineHeight:1.3,marginBottom:4}}>
+                  {ln.ru}
+                </div>
+                {isCurrent&&(
+                  <>
+                    <div style={{fontSize:11,color:C.dim,fontStyle:'italic',fontFamily:"'Space Mono',monospace",marginBottom:6}}>{ln.pr}</div>
+                    <div style={{fontSize:13,color:`${C.silver}99`,borderLeft:`2px solid ${C.cyan}44`,paddingLeft:8}}>{ln.en}</div>
+                  </>
+                )}
+              </Glass>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Nav */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0 32px'}}>
+        <button onClick={()=>setLineIdx(i=>Math.max(0,i-1))} disabled={lineIdx===0} style={{
+          background:C.glass,border:`1px solid ${C.dim}33`,borderRadius:12,
+          color:lineIdx===0?`${C.dim}55`:'#fff',cursor:lineIdx===0?'default':'pointer',
+          padding:'10px 20px',fontSize:14,fontFamily:"'Outfit',sans-serif",
+        }}>← Back</button>
+        {isLast
+          ? <button onClick={()=>setSelected(null)} style={{
+              background:`${C.cyan}22`,border:`1px solid ${C.cyan}66`,borderRadius:12,
+              color:C.cyan,cursor:'pointer',padding:'10px 20px',fontSize:13,fontWeight:700,fontFamily:"'Outfit',sans-serif",
+            }}>✓ Done</button>
+          : <button onClick={()=>setLineIdx(i=>i+1)} style={{
+              background:`${C.cyan}22`,border:`1px solid ${C.cyan}66`,borderRadius:12,
+              color:C.cyan,cursor:'pointer',padding:'10px 20px',fontSize:14,fontWeight:700,fontFamily:"'Outfit',sans-serif",
+            }}>Next →</button>
+        }
       </div>
     </div>
   );
@@ -1364,6 +1625,8 @@ export default function AethermindApp() {
 
   const screens = {
     cosmos:   <CosmosScreen state={state} nav={nav} hz={hz}/>,
+    learn:    <LearnScreen state={state} setState={setState} nav={nav} speak={speak}/>,
+    stories:  <StoriesScreen nav={nav} speak={speak}/>,
     drift:    <DriftMode srs={state.srs} onXP={handleBlastXP} voices={voices} hz={hz} onExit={()=>nav('cosmos')}/>,
     quiz:     <QuizView srs={state.srs} onRate={handleQuizRate} themeColor={C.violet} voices={voices}/>,
     blast:    <WordBlast onXP={handleBlastXP} voices={voices} themeColor={C.violet}/>,
