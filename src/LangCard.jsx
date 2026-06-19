@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const WORD_EMOJI = {
   'water':'💧','coffee':'☕','milk':'🥛','juice':'🧃','bread':'🍞',
@@ -24,11 +24,22 @@ function fuzzyMatch(input, target) {
 export default function LangCard({
   item, themeColor = '#c77dff', isFlipped, onFlip, onSpeak,
   isPlaying, rateStatus, onRate, studyMode = 'flip_ru_en', cardFontSize = 'medium',
+  autoPlay = false,
 }) {
   const [typeInput, setTypeInput]     = useState('');
   const [typeResult, setTypeResult]   = useState(null);
   const [showInput, setShowInput]     = useState(false);
   const [listenPhase, setListenPhase] = useState('idle');
+
+  useEffect(() => {
+    if (!autoPlay) return;
+    const t = setTimeout(() => {
+      onSpeak();
+      if (studyMode === 'listen') setListenPhase('typing');
+      if (studyMode === 'type') setShowInput(true);
+    }, 250);
+    return () => clearTimeout(t);
+  }, []); // eslint-disable-line
 
   const cc = themeColor;
   const scale = cardFontSize === 'large' ? 1.2 : cardFontSize === 'small' ? 0.82 : 1;
