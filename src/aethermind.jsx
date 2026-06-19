@@ -100,14 +100,18 @@ function makeSpeaker(voices) {
     if (!synth || !ruWord) return;
     synth.cancel();
     const voice = voices.find(v => v.lang === 'ru-RU') || voices.find(v => v.lang.startsWith('ru')) || null;
-    const say = (text, delay = 0) => setTimeout(() => {
+    const mkUtt = (text, rate) => {
       const utt = new SpeechSynthesisUtterance(text);
-      utt.lang = 'ru-RU'; utt.rate = 0.85;
+      utt.lang = 'ru-RU'; utt.rate = rate;
       if (voice) utt.voice = voice;
-      synth.speak(utt);
-    }, delay);
-    say(ruWord);
-    if (ruExample) say(ruExample, 1300);
+      return utt;
+    };
+    const wordUtt = mkUtt(ruWord, 0.82);
+    if (ruExample) {
+      const exUtt = mkUtt(ruExample, 0.78);
+      wordUtt.onend = () => setTimeout(() => synth.speak(exUtt), 400);
+    }
+    synth.speak(wordUtt);
   };
 }
 
