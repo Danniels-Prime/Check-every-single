@@ -9,6 +9,7 @@ import DriftMode from './DriftMode.jsx';
 import { STORIES } from './stories.js';
 import NeomonixView from './NeomonixView.jsx';
 import ShadowLab from './ShadowLab.jsx';
+import VaultView from './VaultView.jsx';
 
 const C = {
   void:'#03010a',deep:'#080810',card:'#0e0c1a',glass:'#14102a',
@@ -312,6 +313,7 @@ function CosmosScreen({state,nav,hz}) {
           {label:'Stories',icon:'💬',screen:'stories',color:C.cyan},
           {label:'Neomonix',icon:'🧠',screen:'neomonix',color:C.gold},
           {label:'Shadow Lab',icon:'🎙',screen:'shadow',color:C.bio},
+          {label:'Vault',icon:'🗄',screen:'vault',color:C.amber},
           {label:'Lucid Drift',icon:'🌊',screen:'drift',color:C.teal},
           {label:'Voice Lab',icon:'🔴',screen:'voice',color:C.rose},
           {label:'Focus',icon:'◎',screen:'focus',color:C.gold},
@@ -1676,6 +1678,7 @@ export default function AethermindApp() {
     reader:   <ReaderScreen state={state} setState={setState} nav={nav}/>,
     neomonix: <NeomonixView onXP={handleBlastXP} nav={nav} speak={speak}/>,
     shadow:   <ShadowLab nav={nav} speak={speak} voices={voices}/>,
+    vault:    <VaultView nav={nav}/>,
   };
 
   return (

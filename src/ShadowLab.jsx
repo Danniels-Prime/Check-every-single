@@ -579,7 +579,6 @@ export default function ShadowLab({ nav, speak, voices }) {
   const tabs = [
     { id: 'shadow', label: '🎙 Shadow', color: C.bio },
     { id: 'battle', label: '⚔️ Battle', color: C.rose },
-    { id: 'vault',  label: '🗄 Vault',  color: C.gold },
   ];
 
   return (
@@ -590,7 +589,7 @@ export default function ShadowLab({ nav, speak, voices }) {
           <button onClick={() => nav('cosmos')} style={{ background: 'none', border: 'none', color: C.dim, fontSize: 20, cursor: 'pointer' }}>←</button>
           <div>
             <div style={{ fontFamily: "'Bebas Neue',display", fontSize: 28, color: C.bio, letterSpacing: 3, lineHeight: 1 }}>SHADOW LAB</div>
-            <div style={{ fontSize: 10, color: C.dim, letterSpacing: 3, fontFamily: "'Space Mono',monospace" }}>SHADOW · BATTLE · VAULT</div>
+            <div style={{ fontSize: 10, color: C.dim, letterSpacing: 3, fontFamily: "'Space Mono',monospace" }}>SHADOW · BATTLE</div>
           </div>
         </div>
 
@@ -612,7 +611,6 @@ export default function ShadowLab({ nav, speak, voices }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px 90px' }}>
         {tab === 'shadow' && <ShadowDrill speak={speak} voices={voices} />}
         {tab === 'battle' && <PhraseBattle speak={speak} />}
-        {tab === 'vault' && <Vault />}
       </div>
     </div>
   );
