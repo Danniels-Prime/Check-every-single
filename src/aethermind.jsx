@@ -7,6 +7,8 @@ import LangCard from './LangCard.jsx';
 import { saveBlob, getBlob, deleteBlob, clearAllBlobs } from './trackDB.js';
 import DriftMode from './DriftMode.jsx';
 import { STORIES } from './stories.js';
+import NeomonixView from './NeomonixView.jsx';
+import ShadowLab from './ShadowLab.jsx';
 
 const C = {
   void:'#03010a',deep:'#080810',card:'#0e0c1a',glass:'#14102a',
@@ -308,8 +310,10 @@ function CosmosScreen({state,nav,hz}) {
         {[
           {label:'Study',icon:'📚',screen:'learn',color:C.violet},
           {label:'Stories',icon:'💬',screen:'stories',color:C.cyan},
+          {label:'Neomonix',icon:'🧠',screen:'neomonix',color:C.gold},
+          {label:'Shadow Lab',icon:'🎙',screen:'shadow',color:C.bio},
           {label:'Lucid Drift',icon:'🌊',screen:'drift',color:C.teal},
-          {label:'Voice Lab',icon:'🎙',screen:'voice',color:C.rose},
+          {label:'Voice Lab',icon:'🔴',screen:'voice',color:C.rose},
           {label:'Focus',icon:'◎',screen:'focus',color:C.gold},
           {label:'All Cards',icon:'⚡',screen:'cards',color:C.acid},
           {label:'Levels',icon:'▲',screen:'levels',color:C.amber},
@@ -1574,11 +1578,11 @@ function ReaderScreen({state,setState,nav}) {
 // ─── BOTTOM NAV ──────────────────────────────────────────────────────────────
 function BottomNav({screen,nav,hz,dueCount,musicLabel}) {
   const tabs = [
-    {id:'cosmos', icon:'◈', label:'Home'},
-    {id:'quiz',   icon:'⚡', label:`Quiz${dueCount?` (${dueCount})`:''}`},
-    {id:'blast',  icon:'💥', label:'Blast'},
-    {id:'reader', icon:'📖', label:'Read'},
-    {id:'ai',     icon:'∞', label:'AI'},
+    {id:'cosmos',   icon:'◈', label:'Home'},
+    {id:'quiz',     icon:'⚡', label:`Quiz${dueCount?` (${dueCount})`:''}`},
+    {id:'neomonix', icon:'🧠', label:'Neomonix'},
+    {id:'shadow',   icon:'🎙', label:'Shadow'},
+    {id:'ai',       icon:'∞', label:'AI'},
   ];
   return (
     <div style={{
@@ -1670,6 +1674,8 @@ export default function AethermindApp() {
     settings: <SettingsScreen state={state} setState={setState} nav={nav}/>,
     ai:       <AIScreen state={state} setState={setState} nav={nav}/>,
     reader:   <ReaderScreen state={state} setState={setState} nav={nav}/>,
+    neomonix: <NeomonixView onXP={handleBlastXP} nav={nav} speak={speak}/>,
+    shadow:   <ShadowLab nav={nav} speak={speak} voices={voices}/>,
   };
 
   return (
