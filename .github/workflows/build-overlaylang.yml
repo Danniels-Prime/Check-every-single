@@ -49,6 +49,14 @@ jobs:
             app/build.gradle
           # enableBundleCompression was removed from ReactExtension in the Kotlin 2.1.20-compatible plugin
           sed -i '/enableBundleCompression/d' app/build.gradle
+          # pika-compiler (io.github.lukmccall.pika) is not published to any accessible Maven repo.
+          # Both :expo and :react-native-reanimated declare it. Strip every reference so Gradle
+          # never tries to resolve the missing artifact. Worklets still transform via Babel/metro.
+          find ../node_modules -path "*/android/*.gradle" -o -path "*/android/*.gradle.kts" 2>/dev/null | \
+            xargs grep -l "lukmccall\|pika-compiler" 2>/dev/null | \
+            xargs sed -i '/lukmccall\|pika-compiler/d' 2>/dev/null || true
+          find . \( -name "*.gradle" -o -name "*.gradle.kts" \) \
+            -exec sed -i '/lukmccall\|pika-compiler/d' {} \; 2>/dev/null || true
 
       - name: Make gradlew executable
         working-directory: expo-app/android
